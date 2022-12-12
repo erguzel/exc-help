@@ -1,4 +1,4 @@
-# Project Title
+# exc-help
 
 exc-help exception helper package
 
