@@ -15,7 +15,7 @@ exc-help is a core python project which is used to manage exceptions. It is desi
 ### Installing
 
 * Not available in pip repositories yet
-* pip install git+ssh://git@github.com/erguzel/exc-help.git/
+* pip install git+ssh://git@github.com/erguzel/exc-help.git
 
 ### Executing program
 
