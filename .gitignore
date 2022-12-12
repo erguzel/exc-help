@@ -1,3 +1,7 @@
+*.venv/
+*env/
+*venv/
+
 *.ipynb_checkpoints
 *.__paycache__/
 *.DS_Store
