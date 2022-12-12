@@ -8,7 +8,7 @@ setup(
     author='Olgun Erguezel',
     author_email='olgunerguzel@gmail.com',
     license='MIT',
-    packages=['exchelp'],
+    packages=['src/exchelp'],
     install_requires=[],
 
     classifiers=[

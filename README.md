@@ -88,7 +88,7 @@ output:
 
 Contributors names and contact info
 
- Olgun Erguezel
+ olgunerguzel@gmail.com
 
 ## Version History
 
