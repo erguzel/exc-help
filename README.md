@@ -20,6 +20,7 @@ exc-help is a core python project which is used to manage exceptions. It is desi
 ### Executing program
 
 * Simply reference to your module
+
 ```
 import exchelp.exception_helper as eh
 
@@ -27,6 +28,7 @@ try:
     12/0
 except Exception as e:
     eh.CoreException('Some calculation failed',cause=e,logIt=True,dontThrow=False,shouldExit=False).addData('someDataKey','someDataValue').Act()
+
 ```
 
 Some data key-value pairs can be added to exception.
@@ -42,7 +44,7 @@ except Exception as e:
 
 output
 
-````
+```
 {"message": "Some calculation failed", "_file": "/Users/olgunerguzel/Workspace/exc-help/src/main.py", "_line": 4, "someDataKey": "someDataValue", "_timeStamp": "2022-12-12 13:19:00.336627", "_env": "oe-ws-main.local", "_class": "CoreException", "_cause": {"_str": "division by zero", "_class": "ZeroDivisionError"}}
 Traceback (most recent call last):
   File "/Users/olgunerguzel/Workspace/exc-help/src/main.py", line 4, in <module>
