@@ -4,7 +4,7 @@ exc-help exception helper package
 
 ## Description
 
-exc-help is a core python project which is used to manage exceptions in python projects. It is designed in a pattern that one dedicated exception type is used to store and log the exception information in desired application state in json format. It also has a type checking method to identify the variable types, and to take action accordingly in the runtime.
+exc-help is a core python project which is used to manage exceptions. It is designed in a pattern that one dedicated exception type is used to store and log the exception information in desired application state in json format. It also has a type checking method to identify the variable types, and to take action accordingly in the runtime.
 
 ## Getting Started
 
@@ -40,7 +40,7 @@ except Exception as e:
     eh.CoreException('Some calculation failed',cause=e,logIt=True,dontThrow=False,shouldExit=False).addData('someDataKey','someDataValue').Act()
 ```
 
-output:
+output
 
 ````
 {"message": "Some calculation failed", "_file": "/Users/olgunerguzel/Workspace/exc-help/src/main.py", "_line": 4, "someDataKey": "someDataValue", "_timeStamp": "2022-12-12 13:19:00.336627", "_env": "oe-ws-main.local", "_class": "CoreException", "_cause": {"_str": "division by zero", "_class": "ZeroDivisionError"}}
@@ -57,6 +57,7 @@ Traceback (most recent call last):
   File "/Users/olgunerguzel/Workspace/exc-help/src/exchelp/exception_helper.py", line 157, in Act
     raise self
 exchelp.exception_helper.CoreException: Some calculation failed
+
 ```
 
 ## Help
@@ -70,19 +71,22 @@ try:
     eh.check_type(age,int,typecheckmode=eh.TypeCheckMode.TYPE,shouldThrow=True)
 except Exception as e:
     eh.CoreException('Type check for xxx operation error',cause=e,dontThrow=True,logIt=True).Act()
+
 ```
 
 output:
 
 ```
+
 {"message": "Type check for xxx operation error", "_file": "/Users/olgunerguzel/Workspace/exc-help/src/main.py", "_line": 7, "_timeStamp": "2022-12-12 13:58:46.390028", "_env": "oe-ws-main.local", "_class": "CoreException", "_cause": {"message": "given instance variable 12 is not in expected TypeCheckMode.SUBTYPE of <class 'str'>", "_timeStamp": "2022-12-12 13:58:46.390007", "_class": "TypeMismatchException"}}
 
 ```
+
 ## Authors
 
 Contributors names and contact info
 
-ex. Olgun Erguezel
+ Olgun Erguezel
 
 ## Version History
 
