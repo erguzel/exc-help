@@ -70,7 +70,7 @@ Check given variable type, do not throw but log as json in case of exception
 age = 12
 
 try:
-    eh.check_type(age,int,typecheckmode=eh.TypeCheckMode.TYPE,shouldThrow=True)
+    eh.check_type(age,str,typecheckmode=eh.TypeCheckMode.TYPE,shouldThrow=True)
 except Exception as e:
     eh.CoreException('Type check for xxx operation error',cause=e,dontThrow=True,logIt=True).Act()
 
