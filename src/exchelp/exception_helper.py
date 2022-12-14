@@ -79,8 +79,8 @@ class ExceptionHelpers:
            # exception.__dict__["_str"] = exception.__str__()
         cause:Exception = exception.__cause__;
         if(cause != None):
-            #if(len(cause.__str__())>0):
-                #cause.__dict__["_str"]=cause.__str__()
+            if(len(cause.__str__())>0):
+                cause.__dict__["_str"]=cause.__str__()
             exception.__dict__["_cause"] = {key: val for key, val in ExceptionHelpers.dictionarize(cause).items() if key not in ["shouldExit","logIt","dontThrow","_env"]}
         
         return exception.__dict__
