@@ -93,7 +93,7 @@ class ExceptionHelpers:
         """
         filteredDict = {key: val for key, val in ExceptionHelpers.dictionarize(exception).items() if key not in ["shouldExit","logIt","dontThrow"]}
 
-        return json.dumps(filteredDict)
+        return json.dumps(filteredDict,indent=2)
 #
 # Base Core exception
 #
