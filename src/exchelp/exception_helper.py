@@ -1,89 +1,19 @@
 #exchelp
-# Includes exception types to handle exceptions in genera
+# Includes exception types to handle exceptions and report carriers
 #
+from __future__ import annotations
 import json
 import socket
 import sys
 from enum import Enum
 from  datetime import  datetime
-
-#
-# Enums related to exception handling
-#
-class TypeCheckMode(Enum):
-    TYPE = 1
-    SUBTYPE = 2
-
-#
-# Util Funcitons
-#def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeCheckMode.TYPE,shouldThrow=False,
-#               shouldLog:bool=False,file:str=None,line:int=None)->bool:
-#
-def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeCheckMode.TYPE,shouldThrow=False,
-               shouldLog:bool=False,file:str=None,line:int=None)->bool:
-    """
-    checks the instance type if it matches with ttype
-    :param instance: variable to check type
-    :param ttype: the type to be compared
-    :param typecheckmode: check mode: TYPE checks with type() method
-                                      SUBTYPE checks with isinstance() method
-    :param strictmode: throws exception if true when type mismatch detected
-    :return: True if types are matching
-    """
-
-    exception  = TypeMismatchException(f"given instance variable {instance} is not in expected "
-                                       f"{typecheckmode} of {ttype}").shouldLog(shouldLog)
-
-    if(instance is None):
-        return True
-
-    subtypeMatchCondition:bool = isinstance(instance,ttype)
-    typeMatchCondition:bool = type(instance) is ttype
-
-    result = True
-    match typecheckmode:
-        case TypeCheckMode.SUBTYPE:
-            if (not subtypeMatchCondition):
-                result = False
-        case TypeCheckMode.TYPE:
-            if (not typeMatchCondition ):
-                result = False
-        case _:
-            if(file != None and line != None):
-                TypeMismatchException(f'fiven enum type {typecheckmode} is in default value',
-                                      shouldLog=shouldLog).ActWithLineAndFile(lineNo=line,module=file)
-            TypeMismatchException(f'fiven enum type {typecheckmode} is in default value', shouldLog=shouldLog).Act()
-
-    if(shouldThrow):
-        if(not result):
-            if(file != None and line != None):
-                exception.ActWithLineAndFile(module=file,lineNo=line)
-            exception.Act()
-
-    return result
+import importlib
 
 """
 Static helper methods for exception handling
 """
 class ExceptionHelpers:
-    @staticmethod
-    def dictionarize(exception:Exception) ->str:
-        """
-                Dictionarize exception
-                :param exception: exception object to dictionarize
-                :return: return dictionarized string of exception object
-        """
-      
-        exception.__dict__["_class"]=exception.__class__.__name__
-        #if(len(exception.__str__())>0):
-           # exception.__dict__["_str"] = exception.__str__()
-        cause:Exception = exception.__cause__;
-        if(cause != None):
-            if(len(cause.__str__())>0):
-                cause.__dict__["_str"]=cause.__str__()
-            exception.__dict__["_cause"] = {key: val for key, val in ExceptionHelpers.dictionarize(cause).items() if key not in ["shouldExit","logIt","dontThrow","_env"]}
-        
-        return exception.__dict__
+
     @staticmethod
     def jsonize(exception:Exception) ->str:
         """
@@ -91,30 +21,41 @@ class ExceptionHelpers:
         :param exception: exception to jsonize
         :return: Json string as exception
         """
-        filteredDict = {key: val for key, val in ExceptionHelpers.dictionarize(exception).items() if key not in ["shouldExit","logIt","dontThrow"]}
+        try:
+            exception.__dict__["_class"]=exception.__class__.__name__
+            #if(len(exception.__str__())>0):
+            # exception.__dict__["_str"] = exception.__str__()
+            cause:Exception = exception.__cause__;
+            if(cause != None):
+                if(len(cause.__str__())>0):
+                    cause.__dict__["_repr"]=cause.__repr__()
+                    exception.__dict__["_cause"] = {key: val for key, val in dictionarize_data(cause).items() if key not in ["shouldexit","logIt","dontThrow","_env"]}
 
-        return json.dumps(filteredDict,indent=2)
+            filteredDict = {key: val for key, val in dictionarize_data(exception).items() if key not in ["shouldexit","logIt","dontThrow"]}
+            #filteredDict = {key: val for key, val in ExceptionHelpers.dictionarize(exception).items() if key not in ["shouldexit","logIt","dontThrow"]}
+
+            return json_dumps_safe(filteredDict,indent=2)
+            #return json.dumps(filteredDict,indent=2)
+        except Exception as e:
+            raise TypeError('ExceptionHelper.jsonize failed',e)
 #
 # Base Core exception
 #
 class CoreException(Exception,BaseException):
-    def __init__(self,message:str=None,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit:bool=False):
+    def __init__(self,message:str=None,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldexit:bool=False):
         """
         Initializes core exception object
         :param message: exception message
         :param cause: exception cause as exception
-        :param dontThrow: true if it is not to be thrwn at Act function call
-        :param logIt: true if it is to be logged at Act funciton call
+        :param dontThrow: true if it is not to be thrwn at act function call
+        :param logIt: true if it is to be logged at act funciton call
         """
         self.message=message
         self.__cause__= cause
         self.dontThrow = dontThrow
         self.logIt = logIt
         self.__initLineNo__()
-        self.shouldExit = shouldExit
-       # print("Exception type: ", exception_type)
-       # print("File name: ", filename)
-       # print("Line number: ", line_number)
+        self.shouldexit = shouldexit
     def __initLineNo__(self):
         """
         checks already thrown exception at the time of initialization
@@ -127,79 +68,122 @@ class CoreException(Exception,BaseException):
             self.__dict__['_file'] = filename
             self.__dict__['_line'] = line_number
 
-    def ActWithLineAndFile(self,lineNo,module):
+    def actwithlineandfile(self,lineNo,module):
         """
-        Adds line number and module name to dict object before calling Act method
+        Adds line number and module name to dict object before calling act method
         """
         if(not self.__dict__.__contains__('_line')):
-           #self.__dict__['_line'] = sys._getframe().f_lineno
             self.__dict__['_line'] = lineNo
 
         if(not  self.__dict__.__contains__('_file')):
-           # self.__dict__['_file']=sys.modules[__name__].__file__
             self.__dict__['_file']=module
 
-        self.Act()
+        self.act()
 
-    def Act(self):
+    def act(self):
         """
-        Acts according to log or throw boolean
-        throws itself if throw boolean true at the moment of Act function
-        logs exception if log boolean true at the moment of Act function
+        acts according to log or throw boolean
+        throws itself if throw boolean true at the moment of act function
+        logs exception if log boolean true at the moment of act function
         :return: nothing
         """
         self.__dict__['_timeStamp']=datetime.now().__str__()
         self.__dict__['_env']= socket.gethostname()
-        #self.__dict__['_env']= socket.gethostname()
         if(self.logIt):
             print(ExceptionHelpers.jsonize(self))
 
         if(not self.dontThrow):
             raise self
         
-        if(self.shouldExit):
+        if(self.shouldexit):
             exit(-1)
 
-    def addData(self,key:object, value:object):
+    def adddata(self,key:object, value:object):
         """
         Adds data to dict object
         """
         self.__dict__[key] = value
         return self
 
-    def shouldLog(self,shouldLog:bool):
+    def getData(self,key:object):
+        try:
+            res = self.__dict__[key]
+            return res
+        except Exception as e:
+            TypeError('getData failed',e)
+
+    def shouldlog(self,shouldLog:bool):
         """
         Sets loggin boolean
-        :param shouldLog: true if exception to be logged as json in Act function call
+        :param shouldlog: true if exception to be logged as json in act function call
         :return: nothing
         """
         self.logIt = shouldLog
         return self
-    def shouldThrow(self,shouldThrow:bool):
+    def shouldthrow(self,shouldThrow:bool):
         """
         Sets throw boolean
-        :param shouldThrow: true if throw itself in Act function call
+        :param shouldthrow: true if throw itself in act function call
         :return: nothing
         """
         self.dontThrow = not shouldThrow
         return self
-    def shouldExit(self,shouldExit:bool):
+    def shouldexit(self,shouldExit:bool):
         """
         Sets exit boolean
-        :param shouldExit: if true exit appliation at Act function call
+        :param shouldexit: if true exit appliation at act function call
         :return: nothing
         """
         self.dontThrow = not shouldExit
         return self
 
+class ReportObject(object):
+    def __init__(self):
+        """
+        Initializes report object
+        :param title: object title
+        """
+        #self.title=title
 
+    def addData(self,key:object, value:object):
+        """
+        Adds data to dict object
+        """
+        self.__dict__[key] = value.__dict__ if hasattr(value,"__dict__") else value
+        return self
+
+    def getData(self,key:object)->ReportObject|dict|object:
+        """Gets data from body dictionary
+
+        Args:
+            key (object): property name
+
+        Returns:
+            ReportObject|dict|object: property value
+        """
+        try:
+            res = self.__dict__[key]
+            return res
+        except Exception as e:
+            CoreException('getData failed',e,dontThrow=True,logIt=True,shouldExit=True).addData('locals',str(locals())).Act()
+
+    def __repr__(self) -> str:
+        return 'ReportObject()'
+
+    def reportize(self):
+        """converts class attributes to a json report
+
+        Returns:
+            _type_: json string from attributes of the class
+        """
+        return json_dumps_safe(self)  
 
 """
 Thworn when a code snippet is interrupted by an unknown excepotion
 Set actual exception as cause in catch block
 """
 class UnknownExceptionCaughtException(CoreException):
-    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit = False):
+    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldexit = False):
         """
         Initializes object
         :param message: Exception message
@@ -208,14 +192,14 @@ class UnknownExceptionCaughtException(CoreException):
         :param logIt: true if exceptionto be logged as json
         """
         super(UnknownExceptionCaughtException, self)\
-            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldExit=shouldExit)
+            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldexit=shouldexit)
 
 """
 Thworn when a type mismatch caught
 Set actual exception as cause in catch block
 """
 class TypeMismatchException(CoreException):
-    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit = False):
+    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldexit = False):
         """
         Initializes object
         :param message: Exception message
@@ -224,8 +208,191 @@ class TypeMismatchException(CoreException):
         :param logIt: true if exceptionto be logged as json
         """
         super(TypeMismatchException, self)\
-            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldExit=shouldExit)
+            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldexit=shouldexit)
+
+#
+# Util objects
+#def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeCheckMode.TYPE,shouldthrow=False,
+#               shouldlog:bool=False,file:str=None,line:int=None)->bool:
+#
+
+#
+# Enums related to exception handling
+#
+class TypeCheckMode(Enum):
+    TYPE = 1
+    SUBTYPE = 2
+
+def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeCheckMode.TYPE)->bool:
+    """
+    checks the instance type if it matches with ttype
+    :param instance: variable to check type
+    :param ttype: the type to be compared
+    :param typecheckmode: check mode: TYPE checks with type() method
+                                      SUBTYPE checks with isinstance() method
+    :param strictmode: throws exception if true when type mismatch detected
+    :return: True if types are matching
+    """
+    try:
+        if typecheckmode == TypeCheckMode.SUBTYPE:
+            if type(ttype) is tuple:
+                if None in ttype:
+                    raise TypeError('None can not be a candidate for a subtype check. Use type mode instead for None check')
+        
+        if typecheckmode == TypeCheckMode.TYPE:
+            if type(ttype) != type:
+                raise TypeError('ttype must be a type for a type check')
+
+        match typecheckmode:
+            case TypeCheckMode.SUBTYPE:
+                return isinstance(instance,ttype)
+            case TypeCheckMode.TYPE:
+                return type(instance) ==  ttype
+            case _:
+                TypeError(f'Given enum type {typecheckmode} is in default value')       
+    except Exception as e:
+        raise  TypeError(f"Type checking failed",e)
+
+def try_get_dump(data,indent=2)->None|str:
+    try:
+        return json.dumps(data,indent=indent)
+    except:
+        return None
+
+def is_jsondumpable(data)->bool:
+    try:
+        json.dumps(data)
+        return True
+    except:
+        return False
+
+def json_dumps_safe(data,indent=2):
+    try:
+        stringified= dictionarize_data(data=data)
+        jsonized = json.dumps(stringified,indent=indent)
+        return jsonized
+    except Exception as e:
+        raise TypeError('json_dumps_safe failed',e)
+
+def dictionarize_data(data)->dict:
+  try:
+     if(is_jsondumpable(data)):return data
+     
+     ### understand types
+     isBytes = check_type(data,bytes,TypeCheckMode.SUBTYPE)
+     if isBytes:
+         return dictionarize_data(data=str(data))
+     isSet = hasattr(data,'issuperset') and hasattr(data,'issubset') and hasattr(data,'isdisjoint')
+     if isSet:
+         return dictionarize_data(data=list(data))
+     hasDict = hasattr(data,'__dict__')
+     if hasDict:
+         isException = check_type(data,(Exception,BaseException),TypeCheckMode.SUBTYPE)
+         if(isException):
+            data.__dict__['_repr']=repr(data)
+         return dictionarize_data(data=data.__dict__)
+     isTuple = check_type(data,tuple,TypeCheckMode.SUBTYPE)
+     if isTuple:
+         return dictionarize_data(data=list(data))
+     ## try iterate
+     try:
+         for idx, el in enumerate(data):
+             isDict = hasattr(data,'items') and hasattr(data,'keys') and hasattr(data,'values')
+             val = data[el] if isDict else data[idx]
+             val = dictionarize_data(data=val)
+             data[el if isDict else idx] = val
+         data = dictionarize_data(data=data)
+     except Exception as e:## not iterable meaning unguessed type
+         data = dictionarize_data(data='<not-serializable>')
+     return data
+  except Exception as e:
+    raise TypeError('dictionarize_data failed',e)
 
 
 
-  
+def object_from_module(moduleName:str,objectName:str,subObjectName:str=None):
+    """Creates an instantiable meata-object of given module and object names combination
+
+    Args:
+        moduleName (str): name of the module
+        objectName (str): name of the class or function
+        subObjectName (str, optional): Name of the sub class or function. Defaults to None.
+
+    Returns:
+        _type_: a meta-object ready to be instantiated  """
+    try:
+        module = importlib.import_module(moduleName)
+        result_ = getattr(module, objectName)
+        if(subObjectName != None):
+            result_ = getattr(result_,subObjectName)
+        return result_
+    except Exception as e:
+        CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).addData('localcs',str(locals())).Act()
+
+import os
+
+main_report = ReportObject().addData('_title_',os.path.basename(__file__)).\
+    addData('initialize_info',ReportObject().\
+        addData('source',r"examples/bbc4-articles/data/raw/bbc4").\
+        addData('extension','.txt').\
+        addData('type','text-document')
+    ).\
+    addData('cleanse_info',ReportObject().\
+        addData('char_cleaner_function',ReportObject().\
+            addData('module','aistudio.data.cleanse.text.char_wise').\
+            addData('object','clear_default_unwanted')
+
+        ).\
+        addData('stemming_lemmatization_function',ReportObject().\
+            addData('module','aistudio.data.cleanse.text.token_wise').\
+            addData('object','stemming_lematization')
+        ).\
+        addData('stemmer_or_lemmatizer_instance',ReportObject().\
+                addData('module','nltk.stem').\
+                addData('object','WordNetLemmatizer')
+            )
+    ).\
+    addData('prepare_info',ReportObject().\
+        addData('vectorizer_instance',ReportObject().\
+            addData('module','sklearn.feature_extraction.text').\
+            addData('object','CountVectorizer').\
+            addData('hyper_params',ReportObject().\
+                addData('max_features',1500).\
+                addData('min_df',5).\
+                addData('max_df',0.7)
+            ).\
+            addData('stop_words_function',ReportObject().\
+                    addData('module','nltk.corpus').\
+                    addData('object','stopwords').\
+                    addData('subObject','words')
+            ).\
+            addData('language','english')
+        ).\
+        addData('transformer_instance',ReportObject().\
+            addData('module','sklearn.feature_extraction.text').\
+            addData('object','TfidfTransformer')
+        ).\
+        addData('test_size',0.2).\
+        addData('random_state',0)
+    ).\
+    addData('execute_info',ReportObject().\
+        addData('model_instance',ReportObject().\
+            addData('module','sklearn.ensemble').
+            addData('object','RandomForestClassifier').\
+            addData('hyper_params',ReportObject().\
+                addData('n_estimators',1000).\
+                addData('random_state',0)
+            )
+        )
+    )
+
+print(main_report.reportize())
+
+
+
+
+    
+
+
+
+
