@@ -329,67 +329,6 @@ def object_from_module(moduleName:str,objectName:str,subObjectName:str=None):
     except Exception as e:
         CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).addData('localcs',str(locals())).Act()
 
-import os
-
-main_report = ReportObject().addData('_title_',os.path.basename(__file__)).\
-    addData('initialize_info',ReportObject().\
-        addData('source',r"examples/bbc4-articles/data/raw/bbc4").\
-        addData('extension','.txt').\
-        addData('type','text-document')
-    ).\
-    addData('cleanse_info',ReportObject().\
-        addData('char_cleaner_function',ReportObject().\
-            addData('module','aistudio.data.cleanse.text.char_wise').\
-            addData('object','clear_default_unwanted')
-
-        ).\
-        addData('stemming_lemmatization_function',ReportObject().\
-            addData('module','aistudio.data.cleanse.text.token_wise').\
-            addData('object','stemming_lematization')
-        ).\
-        addData('stemmer_or_lemmatizer_instance',ReportObject().\
-                addData('module','nltk.stem').\
-                addData('object','WordNetLemmatizer')
-            )
-    ).\
-    addData('prepare_info',ReportObject().\
-        addData('vectorizer_instance',ReportObject().\
-            addData('module','sklearn.feature_extraction.text').\
-            addData('object','CountVectorizer').\
-            addData('hyper_params',ReportObject().\
-                addData('max_features',1500).\
-                addData('min_df',5).\
-                addData('max_df',0.7)
-            ).\
-            addData('stop_words_function',ReportObject().\
-                    addData('module','nltk.corpus').\
-                    addData('object','stopwords').\
-                    addData('subObject','words')
-            ).\
-            addData('language','english')
-        ).\
-        addData('transformer_instance',ReportObject().\
-            addData('module','sklearn.feature_extraction.text').\
-            addData('object','TfidfTransformer')
-        ).\
-        addData('test_size',0.2).\
-        addData('random_state',0)
-    ).\
-    addData('execute_info',ReportObject().\
-        addData('model_instance',ReportObject().\
-            addData('module','sklearn.ensemble').
-            addData('object','RandomForestClassifier').\
-            addData('hyper_params',ReportObject().\
-                addData('n_estimators',1000).\
-                addData('random_state',0)
-            )
-        )
-    )
-
-print(main_report.reportize())
-
-
-
 
     
 
