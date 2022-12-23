@@ -34,6 +34,9 @@ class ExceptionHelpers:
             return json_dumps_safe(filteredDict)
         except Exception as e:
             raise TypeError('ExceptionHelper.jsonize failed',e)
+            #
+            #
+            #
 #
 # Base Core exception
 #
@@ -52,6 +55,9 @@ class CoreException(Exception,BaseException):
         self.logIt = logIt
         self.__initLineNo__()
         self.shouldexit = shouldExit
+        #
+        #
+        #
     def __initLineNo__(self):
         """
         checks already thrown exception at the time of initialization
@@ -63,7 +69,9 @@ class CoreException(Exception,BaseException):
             line_number = exception_traceback.tb_lineno
             self.__dict__['_file'] = filename
             self.__dict__['_line'] = line_number
-
+            #
+            #
+            #
     def actwithlineandfile(self,lineNo,module):
         """
         Adds line number and module name to dict object before calling act method
@@ -75,7 +83,9 @@ class CoreException(Exception,BaseException):
             self.__dict__['_file']=module
 
         self.act()
-
+        #
+        #
+        #
     def act(self):
         """
         acts according to log or throw boolean
@@ -93,21 +103,27 @@ class CoreException(Exception,BaseException):
         
         if(self.shouldexit):
             exit(-1)
-
+            #
+            #
+            #
     def adddata(self,key:object, value:object):
         """
         Adds data to dict object
         """
         self.__dict__[key] = value
         return self
-
+        #
+        #
+        #
     def getData(self,key:object):
         try:
             res = self.__dict__[key]
             return res
         except Exception as e:
             TypeError('getData failed',e)
-
+            #
+            #
+            #
     def shouldlog(self,shouldLog:bool):
         """
         Sets loggin boolean
@@ -116,6 +132,9 @@ class CoreException(Exception,BaseException):
         """
         self.logIt = shouldLog
         return self
+        #
+        #
+        #
     def shouldthrow(self,shouldThrow:bool):
         """
         Sets throw boolean
@@ -124,6 +143,9 @@ class CoreException(Exception,BaseException):
         """
         self.dontThrow = not shouldThrow
         return self
+        #
+        #
+        #
     def shouldexit(self,shouldExit:bool):
         """
         Sets exit boolean
@@ -132,7 +154,9 @@ class CoreException(Exception,BaseException):
         """
         self.dontThrow = not shouldExit
         return self
-
+        #
+        #
+        #
 class ReportObject(object):
     def __init__(self,remark:str=None):
         """
@@ -140,14 +164,18 @@ class ReportObject(object):
         :param title: object title
         """
         self.remark=remark
-
+        #
+        #
+        #
     def addData(self,key:object, value:object):
         """
         Adds data to dict object
         """
         self.__dict__[key] = value.__dict__ if hasattr(value,"__dict__") else value
         return self
-
+        #
+        #
+        #
     def getData(self,key:object)->ReportObject|dict|object:
         """Gets data from body dictionary
 
@@ -161,19 +189,23 @@ class ReportObject(object):
             res = self.__dict__[key]
             return res
         except Exception as e:
-            CoreException('getData failed',e,dontThrow=True,logIt=True,shouldExit=True).addData('locals',str(locals())).Act()
+            CoreException('getData failed',e,dontThrow=True,logIt=True,shouldExit=True).addData('locals',str(locals())).act()
 
     def __repr__(self) -> str:
         return 'ReportObject()'
-
+        #
+        #
+        #
     def reportize(self):
         """converts class attributes to a json report
 
         Returns:
             _type_: json string from attributes of the class
         """
-        return json_dumps_safe(self)  
-
+        return json_dumps_safe(self)
+        #
+        #
+        #
 """
 Thworn when a code snippet is interrupted by an unknown excepotion
 Set actual exception as cause in catch block
@@ -189,7 +221,9 @@ class UnknownExceptionCaughtException(CoreException):
         """
         super(UnknownExceptionCaughtException, self)\
             .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldexit=shouldexit)
-
+            #
+            #
+            #
 """
 Thworn when a type mismatch caught
 Set actual exception as cause in catch block
@@ -205,8 +239,9 @@ class TypeMismatchException(CoreException):
         """
         super(TypeMismatchException, self)\
             .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldexit=shouldexit)
-
-#
+            #
+            #
+            #
 # Util objects
 #def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeCheckMode.TYPE,shouldthrow=False,
 #               shouldlog:bool=False,file:str=None,line:int=None)->bool:
@@ -218,7 +253,9 @@ class TypeMismatchException(CoreException):
 class TypeCheckMode(Enum):
     TYPE = 1
     SUBTYPE = 2
-
+    #
+    #
+    #
 def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeCheckMode.TYPE)->bool:
     """
     checks the instance type if it matches with ttype
@@ -254,14 +291,18 @@ def try_get_dump(data,indent=2)->None|str:
         return json.dumps(data,indent=indent)
     except:
         return None
-
+        #
+        #
+        #
 def is_jsondumpable(data)->bool:
     try:
         json.dumps(data)
         return True
     except:
         return False
-
+        #
+        #
+        #
 def json_dumps_safe(data,indent=1):
     try:
         stringified= dictionarize_data(data=data)
@@ -269,7 +310,9 @@ def json_dumps_safe(data,indent=1):
         return jsonized
     except Exception as e:
         raise TypeError('json_dumps_safe failed',e)
-
+        #
+        #
+        #
 def dictionarize_data(data)->dict:
   try:
      if is_jsondumpable(data) :return data 
@@ -305,9 +348,9 @@ def dictionarize_data(data)->dict:
      return data
   except Exception as e:
     raise TypeError('dictionarize_data failed',e)
-
-
-
+    #
+    #
+    #
 def object_from_module(moduleName:str,objectName:str,subObjectName:str=None):
     """Creates an instantiable meata-object of given module and object names combination
 
@@ -325,7 +368,7 @@ def object_from_module(moduleName:str,objectName:str,subObjectName:str=None):
             result_ = getattr(result_,subObjectName)
         return result_
     except Exception as e:
-        CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).Act()
+        CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).act()
 
 
     
