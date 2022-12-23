@@ -1,9 +1,8 @@
 import os
 import sys
-print(os.getcwd())
 sys.path.insert(1,os.getcwd())
+
 from src.exchelp.exception_helper import CoreException,ReportObject
-import src.exchelp.exception_helper as eh
 
 
 def sum_divide_function(a,b,d):
@@ -29,3 +28,6 @@ def sum_divide_function(a,b,d):
 
 
 print(sum_divide_function(3,4,0))
+
+
+
