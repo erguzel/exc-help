@@ -90,10 +90,13 @@ Example usage
 def sum_divide_function(a,b,d):
     try:
         sum = a+b
-        divide = sum/d
-        return divide
+        try:
+            return sum/d
+        except Exception as k :
+            CoreException('some core cause exception',k).adddata('sum',sum).act()
+        
     except Exception as e:
-        CoreException('sum_divide_function failure',e,logIt=True,dontThrow=True,shouldExit=True).\
+        CoveringException('sum_divide_function failure',cause=e,logIt=True,dontThrow=True,shouldExit=True).\
             adddata('report',ReportObject().\
                     adddata('who',{'name':'human','locals':locals()})).\
                     adddata('someList',[1,2,3,'4']).\
@@ -118,53 +121,73 @@ output:
 ```
 
 {
- "message": "sum_divide_function failure",
- "_file": "~/Workspace/exc-help/tests/exchelp/test_exception_helper.py",
- "_line": 11,
- "report": {
-  "who": {
-   "name": "human",
-   "locals": {
-    "a": 3,
-    "b": 4,
-    "d": 0,
-    "sum": 7,
-    "e": {
-     "_repr": "ZeroDivisionError('division by zero')"
+  "message": "sum_divide_function failure",
+  "dontthrow": true,
+  "logit": true,
+  "_file": "/Users/olgunerguzel/Workspace/exc-help/tests/exchelp/test_exception_helper.py",
+  "_line": 14,
+  "shouldexit": true,
+  "report": {
+    "who": {
+      "name": "human",
+      "locals": {
+        "a": 3,
+        "b": 4,
+        "d": 0,
+        "sum": 7,
+        "e": {
+          "message": "some core cause exception",
+          "dontthrow": false,
+          "logit": false,
+          "_file": "/Users/olgunerguzel/Workspace/exc-help/tests/exchelp/test_exception_helper.py",
+          "_line": 12,
+          "shouldexit": false,
+          "sum": 7,
+          "_timeStamp": "2022-12-23 20:52:54.115004",
+          "_env": "oe-ws-main.local",
+          "_repr": "CoreException('some core cause exception', ZeroDivisionError('division by zero'))"
+        }
+      }
     }
-   }
-  }
- },
- "someList": [
-  1,
-  2,
-  3,
-  "4"
- ],
- "someSet": [
-  1,
-  2,
-  "3"
- ],
- "someTuple": [
-  3,
-  4,
-  5,
-  "3"
- ],
- "some single tuplike": 255,
- "someType": "<not-serializable>",
- "someByteStr": "b'hello world'",
- "someBytes": "b'\\x07\\x08\\t\\xff'",
- "byteArr": "b'\\x04\\x05\\x07'",
- "byteArrStr": "b'hello world'",
- "_timeStamp": "2022-12-23 12:23:32.678820",
- "_env": "oe-ws-main.local",
- "_class": "CoreException",
- "_cause": {
-  "_repr": "ZeroDivisionError('division by zero')"
- },
- "_repr": "CoreException('sum_divide_function failure', ZeroDivisionError('division by zero'))"
+  },
+  "someList": [
+    1,
+    2,
+    3,
+    "4"
+  ],
+  "someSet": [
+    "3",
+    1,
+    2
+  ],
+  "someTuple": [
+    3,
+    4,
+    5,
+    "3"
+  ],
+  "some single tuplike": 255,
+  "someType": "<not-serializable>",
+  "someByteStr": "b'hello world'",
+  "someBytes": "b'\\x07\\x08\\t\\xff'",
+  "byteArr": "b'\\x04\\x05\\x07'",
+  "byteArrStr": "b'hello world'",
+  "_timeStamp": "2022-12-23 20:52:54.115049",
+  "_env": "oe-ws-main.local",
+  "_class": "CoveringException",
+  "_cause": {
+    "message": "some core cause exception",
+    "dontthrow": false,
+    "logit": false,
+    "_file": "/Users/olgunerguzel/Workspace/exc-help/tests/exchelp/test_exception_helper.py",
+    "_line": 12,
+    "shouldexit": false,
+    "sum": 7,
+    "_timeStamp": "2022-12-23 20:52:54.115004",
+    "_repr": "CoreException('some core cause exception', ZeroDivisionError('division by zero'))"
+  },
+  "_repr": "CoveringException('sum_divide_function failure')"
 }
 
 

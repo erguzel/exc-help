@@ -7,7 +7,7 @@ import socket
 import sys
 from enum import Enum
 from  datetime import  datetime
-import importlib
+
 
 """
 Static helper methods for exception handling
@@ -37,10 +37,13 @@ class ExceptionHelpers:
             #
             #
             #
-#
-# Base Core exception
-#
 class CoreException(Exception,BaseException):
+    """General Core reason exception, thrown after logical checks
+
+    Args:
+        Exception (_type_): Inherited from
+        BaseException (_type_): Inherited from 
+    """
     def __init__(self,message:str=None,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit:bool=False):
         """
         Initializes core exception object
@@ -157,12 +160,13 @@ class CoreException(Exception,BaseException):
         #
         #
         #
+
 """
-Thworn when a code snippet is interrupted by an unknown excepotion
+Thworn for covering user thrown CoreExceptions or unknown system errors or exceptions
 Set actual exception as cause in catch block
 """
-class UnknownExceptionCaughtException(CoreException):
-    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldexit = False):
+class CoveringException(CoreException):
+    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit = False):
         """
         Initializes object
         :param message: Exception message
@@ -170,26 +174,8 @@ class UnknownExceptionCaughtException(CoreException):
         :param dontThrow: true if it is not to be thrown
         :param logIt: true if exceptionto be logged as json
         """
-        super(UnknownExceptionCaughtException, self)\
-            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldexit=shouldexit)
-            #
-            #
-            #
-"""
-Thworn when a type mismatch caught
-Set actual exception as cause in catch block
-"""
-class TypeMismatchException(CoreException):
-    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldexit = False):
-        """
-        Initializes object
-        :param message: Exception message
-        :param cause: Exception cause as exception
-        :param dontThrow: true if it is not to be thrown
-        :param logIt: true if exceptionto be logged as json
-        """
-        super(TypeMismatchException, self)\
-            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldexit=shouldexit)
+        super(CoveringException, self)\
+            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldExit=shouldExit)
             #
             #
             #
@@ -303,7 +289,7 @@ def is_jsondumpable(data)->bool:
         #
         #
         #
-def json_dumps_safe(data,indent=1):
+def json_dumps_safe(data,indent=2):
     try:
         stringified= dictionarize_data(data=data)
         jsonized = json.dumps(stringified,indent=indent)
