@@ -94,7 +94,7 @@ def sum_divide_function(a,b,d):
         return divide
     except Exception as e:
         CoreException('sum_divide_function failure',e,logIt=True,dontThrow=True,shouldExit=True).\
-            adddata('report',ReportObject(f'sum var would be {sum}').\
+            adddata('report',ReportObject().\
                     addData('who',{'name':'human','locals':locals()})).\
                     adddata('someList',[1,2,3,'4']).\
                     adddata('someSet',{1,2,'3'}).\
@@ -122,7 +122,6 @@ output:
  "_file": "~/Workspace/exc-help/tests/exchelp/test_exception_helper.py",
  "_line": 11,
  "report": {
-  "remark": "sum var would be 7",
   "who": {
    "name": "human",
    "locals": {

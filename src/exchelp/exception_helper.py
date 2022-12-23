@@ -158,12 +158,11 @@ class CoreException(Exception,BaseException):
         #
         #
 class ReportObject(object):
-    def __init__(self,remark:str=None):
+    def __init__(self):
         """
         Initializes report object
         :param title: object title
         """
-        self.remark=remark
         #
         #
         #
