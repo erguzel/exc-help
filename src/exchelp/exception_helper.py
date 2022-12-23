@@ -27,9 +27,9 @@ class ExceptionHelpers:
             if(cause != None):
                 if(len(cause.__str__())>0):
                     cause.__dict__["_repr"]=cause.__repr__()
-                    exception.__dict__["_cause"] = {key: val for key, val in dictionarize_data(cause).items() if key not in ["shouldexit","logIt","dontThrow","_env"]}
+                    exception.__dict__["_cause"] = {key: val for key, val in dictionarize_data(cause).items() if key not in ["_env"]}
 
-            filteredDict = {key: val for key, val in dictionarize_data(exception).items() if key not in ["shouldexit","logIt","dontThrow"]}
+            filteredDict = {key: val for key, val in dictionarize_data(exception).items() }
 
             return json_dumps_safe(filteredDict)
         except Exception as e:
@@ -51,8 +51,8 @@ class CoreException(Exception,BaseException):
         """
         self.message=message
         self.__cause__= cause
-        self.dontThrow = dontThrow
-        self.logIt = logIt
+        self.dontthrow = dontThrow
+        self.logit = logIt
         self.__initLineNo__()
         self.shouldexit = shouldExit
         #
@@ -95,10 +95,10 @@ class CoreException(Exception,BaseException):
         """
         self.__dict__['_timeStamp']=datetime.now().__str__()
         self.__dict__['_env']= socket.gethostname()
-        if(self.logIt):
+        if(self.logit):
             print(ExceptionHelpers.jsonize(self))
 
-        if(not self.dontThrow):
+        if(not self.dontthrow):
             raise self
         
         if(self.shouldexit):
@@ -115,7 +115,7 @@ class CoreException(Exception,BaseException):
         #
         #
         #
-    def getData(self,key:object):
+    def getdata(self,key:object):
         try:
             res = self.__dict__[key]
             return res
@@ -130,7 +130,7 @@ class CoreException(Exception,BaseException):
         :param shouldlog: true if exception to be logged as json in act function call
         :return: nothing
         """
-        self.logIt = shouldLog
+        self.logit = shouldLog
         return self
         #
         #
@@ -141,7 +141,7 @@ class CoreException(Exception,BaseException):
         :param shouldthrow: true if throw itself in act function call
         :return: nothing
         """
-        self.dontThrow = not shouldThrow
+        self.dontthrow = not shouldThrow
         return self
         #
         #
@@ -152,56 +152,8 @@ class CoreException(Exception,BaseException):
         :param shouldexit: if true exit appliation at act function call
         :return: nothing
         """
-        self.dontThrow = not shouldExit
+        self.dontthrow = not shouldExit
         return self
-        #
-        #
-        #
-class ReportObject(object):
-    def __init__(self):
-        """
-        Initializes report object
-        :param title: object title
-        """
-        #
-        #
-        #
-    def addData(self,key:object, value:object):
-        """
-        Adds data to dict object
-        """
-        self.__dict__[key] = value.__dict__ if hasattr(value,"__dict__") else value
-        return self
-        #
-        #
-        #
-    def getData(self,key:object)->ReportObject|dict|object:
-        """Gets data from body dictionary
-
-        Args:
-            key (object): property name
-
-        Returns:
-            ReportObject|dict|object: property value
-        """
-        try:
-            res = self.__dict__[key]
-            return res
-        except Exception as e:
-            CoreException('getData failed',e,dontThrow=True,logIt=True,shouldExit=True).addData('locals',str(locals())).act()
-
-    def __repr__(self) -> str:
-        return 'ReportObject()'
-        #
-        #
-        #
-    def reportize(self):
-        """converts class attributes to a json report
-
-        Returns:
-            _type_: json string from attributes of the class
-        """
-        return json_dumps_safe(self)
         #
         #
         #
@@ -249,6 +201,55 @@ class TypeMismatchException(CoreException):
 #
 # Enums related to exception handling
 #
+
+class ReportObject(object):
+    def __init__(self):
+        """
+        Initializes report object
+        :param title: object title
+        """
+        #
+        #
+        #
+    def adddata(self,key:object, value:object):
+        """
+        Adds data to dict object
+        """
+        self.__dict__[key] = value.__dict__ if hasattr(value,"__dict__") else value
+        return self
+        #
+        #
+        #
+    def getdata(self,key:object)->ReportObject|dict|object:
+        """Gets data from body dictionary
+
+        Args:
+            key (object): property name
+
+        Returns:
+            ReportObject|dict|object: property value
+        """
+        try:
+            res = self.__dict__[key]
+            return res
+        except Exception as e:
+            CoreException('getData failed',e,dontThrow=True,logIt=True,shouldExit=True).act()
+
+    def __repr__(self) -> str:
+        return 'ReportObject()'
+        #
+        #
+        #
+    def reportize(self):
+        """converts class attributes to a json report
+
+        Returns:
+            _type_: json string from attributes of the class
+        """
+        return json_dumps_safe(self)
+        #
+        #
+        #
 class TypeCheckMode(Enum):
     TYPE = 1
     SUBTYPE = 2
@@ -367,7 +368,7 @@ def object_from_module(moduleName:str,objectName:str,subObjectName:str=None):
             result_ = getattr(result_,subObjectName)
         return result_
     except Exception as e:
-        CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).act()
+        CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).adddata('locals',locals()).act()
 
 
     

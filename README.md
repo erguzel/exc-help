@@ -95,7 +95,7 @@ def sum_divide_function(a,b,d):
     except Exception as e:
         CoreException('sum_divide_function failure',e,logIt=True,dontThrow=True,shouldExit=True).\
             adddata('report',ReportObject().\
-                    addData('who',{'name':'human','locals':locals()})).\
+                    adddata('who',{'name':'human','locals':locals()})).\
                     adddata('someList',[1,2,3,'4']).\
                     adddata('someSet',{1,2,'3'}).\
                     adddata('someTuple',(3,4,5,'3')).\
