@@ -23,8 +23,6 @@ class ExceptionHelpers:
         """
         try:
             exception.__dict__["_class"]=exception.__class__.__name__
-            #if(len(exception.__str__())>0):
-            # exception.__dict__["_str"] = exception.__str__()
             cause:Exception = exception.__cause__;
             if(cause != None):
                 if(len(cause.__str__())>0):
@@ -32,17 +30,15 @@ class ExceptionHelpers:
                     exception.__dict__["_cause"] = {key: val for key, val in dictionarize_data(cause).items() if key not in ["shouldexit","logIt","dontThrow","_env"]}
 
             filteredDict = {key: val for key, val in dictionarize_data(exception).items() if key not in ["shouldexit","logIt","dontThrow"]}
-            #filteredDict = {key: val for key, val in ExceptionHelpers.dictionarize(exception).items() if key not in ["shouldexit","logIt","dontThrow"]}
 
-            return json_dumps_safe(filteredDict,indent=2)
-            #return json.dumps(filteredDict,indent=2)
+            return json_dumps_safe(filteredDict)
         except Exception as e:
             raise TypeError('ExceptionHelper.jsonize failed',e)
 #
 # Base Core exception
 #
 class CoreException(Exception,BaseException):
-    def __init__(self,message:str=None,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldexit:bool=False):
+    def __init__(self,message:str=None,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit:bool=False):
         """
         Initializes core exception object
         :param message: exception message
@@ -55,7 +51,7 @@ class CoreException(Exception,BaseException):
         self.dontThrow = dontThrow
         self.logIt = logIt
         self.__initLineNo__()
-        self.shouldexit = shouldexit
+        self.shouldexit = shouldExit
     def __initLineNo__(self):
         """
         checks already thrown exception at the time of initialization
@@ -138,12 +134,12 @@ class CoreException(Exception,BaseException):
         return self
 
 class ReportObject(object):
-    def __init__(self):
+    def __init__(self,remark:str=None):
         """
         Initializes report object
         :param title: object title
         """
-        #self.title=title
+        self.remark=remark
 
     def addData(self,key:object, value:object):
         """
@@ -266,7 +262,7 @@ def is_jsondumpable(data)->bool:
     except:
         return False
 
-def json_dumps_safe(data,indent=2):
+def json_dumps_safe(data,indent=1):
     try:
         stringified= dictionarize_data(data=data)
         jsonized = json.dumps(stringified,indent=indent)
@@ -276,12 +272,14 @@ def json_dumps_safe(data,indent=2):
 
 def dictionarize_data(data)->dict:
   try:
-     if(is_jsondumpable(data)):return data
-     
+     if is_jsondumpable(data) :return data 
      ### understand types
      isBytes = check_type(data,bytes,TypeCheckMode.SUBTYPE)
      if isBytes:
          return dictionarize_data(data=str(data))
+     isByteArray = check_type(data,bytearray,TypeCheckMode.SUBTYPE)
+     if isByteArray:
+         return dictionarize_data(data=str(bytes(data)))
      isSet = hasattr(data,'issuperset') and hasattr(data,'issubset') and hasattr(data,'isdisjoint')
      if isSet:
          return dictionarize_data(data=list(data))
@@ -327,7 +325,7 @@ def object_from_module(moduleName:str,objectName:str,subObjectName:str=None):
             result_ = getattr(result_,subObjectName)
         return result_
     except Exception as e:
-        CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).addData('localcs',str(locals())).Act()
+        CoreException('object_from_module failed',e,dontThrow=True,logIt=True,shouldExit=True).Act()
 
 
     
