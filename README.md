@@ -96,7 +96,7 @@ def sum_divide_function(a,b,d):
             CoreException('some core cause exception',k).adddata('sum',sum).act()
         
     except Exception as e:
-        CoveringException('sum_divide_function failure',cause=e,logIt=True,dontThrow=True,shouldExit=True).\
+        CoverException('sum_divide_function failure',cause=e,logIt=True,dontThrow=True,shouldExit=True).\
             adddata('report',ReportObject().\
                     adddata('who',{'name':'human','locals':locals()})).\
                     adddata('someList',[1,2,3,'4']).\
@@ -175,7 +175,7 @@ output:
   "byteArrStr": "b'hello world'",
   "_timeStamp": "2022-12-23 20:52:54.115049",
   "_env": "oe-ws-main.local",
-  "_class": "CoveringException",
+  "_class": "CoverException",
   "_cause": {
     "message": "some core cause exception",
     "dontthrow": false,
@@ -187,7 +187,7 @@ output:
     "_timeStamp": "2022-12-23 20:52:54.115004",
     "_repr": "CoreException('some core cause exception', ZeroDivisionError('division by zero'))"
   },
-  "_repr": "CoveringException('sum_divide_function failure')"
+  "_repr": "CoverException('sum_divide_function failure')"
 }
 
 

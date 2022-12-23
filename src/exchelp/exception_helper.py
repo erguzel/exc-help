@@ -165,7 +165,7 @@ class CoreException(Exception,BaseException):
 Thworn for covering user thrown CoreExceptions or unknown system errors or exceptions
 Set actual exception as cause in catch block
 """
-class CoveringException(CoreException):
+class CoverException(CoreException):
     def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit = False):
         """
         Initializes object
@@ -174,7 +174,7 @@ class CoveringException(CoreException):
         :param dontThrow: true if it is not to be thrown
         :param logIt: true if exceptionto be logged as json
         """
-        super(CoveringException, self)\
+        super(CoverException, self)\
             .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldExit=shouldExit)
             #
             #

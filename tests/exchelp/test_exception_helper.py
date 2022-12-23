@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(1,os.getcwd())
 
-from src.exchelp.exception_helper import CoveringException,ReportObject,CoreException
+from src.exchelp.exception_helper import CoverException,ReportObject,CoreException
 
 
 def sum_divide_function(a,b,d):
@@ -14,7 +14,7 @@ def sum_divide_function(a,b,d):
             CoreException('some core cause exception',k).adddata('sum',sum).act()
         
     except Exception as e:
-        CoveringException('sum_divide_function failure',cause=e,logIt=True,dontThrow=True,shouldExit=True).\
+        CoverException('sum_divide_function failure',cause=e,logIt=True,dontThrow=True,shouldExit=True).\
             adddata('report',ReportObject().\
                     adddata('who',{'name':'human','locals':locals()})).\
                     adddata('someList',[1,2,3,'4']).\
