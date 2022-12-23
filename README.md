@@ -84,6 +84,96 @@ output:
 
 ```
 
+Example usage
+
+```
+def sum_divide_function(a,b,d):
+    try:
+        sum = a+b
+        divide = sum/d
+        return divide
+    except Exception as e:
+        CoreException('sum_divide_function failure',e,logIt=True,dontThrow=True,shouldExit=True).\
+            adddata('report',ReportObject(f'sum var would be {sum}').\
+                    addData('who',{'name':'human','locals':locals()})).\
+                    adddata('someList',[1,2,3,'4']).\
+                    adddata('someSet',{1,2,'3'}).\
+                    adddata('someTuple',(3,4,5,'3')).\
+                    adddata('some single tuplike',(255)).\
+                    adddata('someType',type(dict)).\
+                    adddata('someByteStr',bytes('hello world','utf-8')).\
+                    adddata('someBytes',bytes([7,8,9,255])).\
+                    adddata('byteArr',bytearray([4,5,7])).\
+                    adddata('byteArrStr',bytearray('hello world','utf-8')).\
+                act()
+
+
+
+print(sum_divide_function(3,4,0))
+
+```
+
+output:
+
+```
+
+{
+ "message": "sum_divide_function failure",
+ "_file": "~/Workspace/exc-help/tests/exchelp/test_exception_helper.py",
+ "_line": 11,
+ "report": {
+  "remark": "sum var would be 7",
+  "who": {
+   "name": "human",
+   "locals": {
+    "a": 3,
+    "b": 4,
+    "d": 0,
+    "sum": 7,
+    "e": {
+     "_repr": "ZeroDivisionError('division by zero')"
+    }
+   }
+  }
+ },
+ "someList": [
+  1,
+  2,
+  3,
+  "4"
+ ],
+ "someSet": [
+  1,
+  2,
+  "3"
+ ],
+ "someTuple": [
+  3,
+  4,
+  5,
+  "3"
+ ],
+ "some single tuplike": 255,
+ "someType": "<not-serializable>",
+ "someByteStr": "b'hello world'",
+ "someBytes": "b'\\x07\\x08\\t\\xff'",
+ "byteArr": "b'\\x04\\x05\\x07'",
+ "byteArrStr": "b'hello world'",
+ "_timeStamp": "2022-12-23 12:23:32.678820",
+ "_env": "oe-ws-main.local",
+ "_class": "CoreException",
+ "_cause": {
+  "_repr": "ZeroDivisionError('division by zero')"
+ },
+ "_repr": "CoreException('sum_divide_function failure', ZeroDivisionError('division by zero'))"
+}
+
+
+```
+
+
+
+
 ## Authors
 
 Contributors names and contact info
