@@ -340,7 +340,10 @@ def test_function(data):
      return'printing {}'.format(data)
     
 def test_function2(data):
-    return 'printing from test_function2 {}'.format(data)
+    return 'printing again from test_function2 {}'.format(data)
+
+def test_function3(data):
+    return 'printing again from test_function3 {}'.format(data)
 
 
 
