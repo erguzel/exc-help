@@ -3,6 +3,9 @@ import sys
 sys.path.insert(1,os.getcwd())
 
 from src.exchelp.exception_helper import CoverException,ReportObject,CoreException
+import src.exchelp.exception_helper as eh
+
+import pytest 
 
 
 def sum_divide_function(a,b,d):
@@ -29,8 +32,12 @@ def sum_divide_function(a,b,d):
                 act()
 
 
+#print(sum_divide_function(3,4,0))
 
-print(sum_divide_function(3,4,0))
+def test_test_function():
+    #case 1
+    result = 'printing world'
+    actual = eh.test_function('world')
 
-
+    assert result == actual
 

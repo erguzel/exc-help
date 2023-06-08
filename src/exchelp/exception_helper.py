@@ -336,7 +336,8 @@ def dictionarize_data(data)->dict:
     raise TypeError('dictionarize_data failed',e)
 
 
-
+def test_function(data):
+     return'printing {}'.format(data)
     
 
 

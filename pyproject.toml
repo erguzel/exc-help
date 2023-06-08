@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "exc-help"
-version = "1.0.5"
+version = "0.0.1"
 authors = [
   { name="Olgun Erguezel", email="olgunerguzel@gmail.com" },
 ]
@@ -18,6 +18,15 @@ classifiers = [
      "Operating System :: OS Independent",
      "Programming Language :: Python :: 3.10",
 ]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]  # list of folders that contain the packages (["."] by default)
+include = ["*"]  # package names should match these glob patterns (["*"] by default)
+exclude = ["examples.*", "tests.*"]  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [project.urls]
 "Homepage" = "https://github.com/erguzel/exc-help"

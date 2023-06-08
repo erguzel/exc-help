@@ -1,0 +1,9 @@
+name: exc-help-env
+channels:
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  - pytest
+  - pytest-html
+prefix: ./.convenv
