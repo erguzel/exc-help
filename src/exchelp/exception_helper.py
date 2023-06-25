@@ -200,14 +200,4 @@ def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeC
         raise  TypeError(f"Type checking failed",e)
 
 
-class ReportObject():
-    def __init__(self, **kwargs) -> None:
-        self.__dict__ = self.__dict__ | kwargs
-    def adddata(self,**kwargs):
-        self.__dict__ = self.__dict__ | kwargs
-        return self
-    def toJson(self,verbose = False):
-        js = json.dumps(self,cls = JsonEncoders.DefaultJsonEncoder,indent=2)
-        if verbose:
-            print(js)
-        return js
+
