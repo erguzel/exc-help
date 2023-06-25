@@ -3,239 +3,166 @@
 #
 from __future__ import annotations
 import json
-import socket
+from json import JSONEncoder
 import sys
 from enum import Enum
-from  datetime import  datetime
 
 
-"""
-Static helper methods for exception handling
-"""
-class ExceptionHelpers:
+class baseall(object):
+    def __init__(self) -> None:
+        pass
 
-    @staticmethod
-    def jsonize(exception:Exception) ->str:
-        """
-        Jsonizes exception object
-        :param exception: exception to jsonize
-        :return: Json string as exception
-        """
-        try:
-            exception.__dict__["_class"]=exception.__class__.__name__
-            cause:Exception = exception.__cause__;
-            if(cause != None):
-                if(len(cause.__str__())>0):
-                    cause.__dict__["_repr"]=cause.__repr__()
-                    exception.__dict__["_cause"] = {key: val for key, val in dictionarize_data(cause).items() if key not in ["_env"]}
+    def isin(self, *keyorelms):
+        if hasattr(self,'kwargs'):
+            for key in keyorelms:
+                if key in self.kwargs:
+                    return True
+        if hasattr(self,'args'):
+            for key in keyorelms:
+                if key in self.args:
+                    return True
+        return False
+    
+class kwargsbase(baseall):
+    def __init__(self,**kwargs):
+        self.kwargs = kwargs
+        baseall.__init__(self)
+    
+    def addkvp(self,**kwargs):
+        self.kwargs = self.kwargs | kwargs
+        return self
+    
+    def popkvp(self,*keys):
+        for key in keys:
+            if key in self.kwargs:
+                return self.kwargs.pop(key)
 
-            filteredDict = {key: val for key, val in dictionarize_data(exception).items() }
+    def getkvp(self,key):
+        if key in self.kwargs:
+            return self.kwargs[key]
 
-            return json_dumps_safe(filteredDict)
-        except Exception as e:
-            raise TypeError('ExceptionHelper.jsonize failed',e)
-            #
-            #
-            #
-class CoreException(Exception,BaseException):
-    """General Core reason exception, thrown after logical checks
+class argsbase(baseall):
+    def __init__(self,*args):
+        self.args = args
+        baseall.__init__(self)
+    
+    def addelm(self, *args):
+        self.args = self.args + args
+        return self
+    
+    def popelm(self,index):
+        res = self.args[index] if index < len(self.args) else None
+        self.args = self.args[0:index] + self.args[index+1:]
+        return res
+    
+    def getelm(self,index):
+        pass
 
-    Args:
-        Exception (_type_): Inherited from
-        BaseException (_type_): Inherited from 
-    """
-    def __init__(self,message:str=None,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit:bool=False):
-        """
-        Initializes core exception object
-        :param message: exception message
-        :param cause: exception cause as exception
-        :param dontThrow: true if it is not to be thrwn at act function call
-        :param logIt: true if it is to be logged at act funciton call
-        """
-        self.message=message
-        self.__cause__= cause
-        self.dontthrow = dontThrow
-        self.logit = logIt
-        self.__initLineNo__()
-        self.shouldexit = shouldExit
-        #
-        #
-        #
-    def __initLineNo__(self):
-        """
-        checks already thrown exception at the time of initialization
-        get file and line info from sys.exc_info call
-        """
-        exception_type, exception_object, exception_traceback = sys.exc_info()
-        if (exception_traceback != None):
-            filename = exception_traceback.tb_frame.f_code.co_filename
-            line_number = exception_traceback.tb_lineno
-            self.__dict__['_file'] = filename
-            self.__dict__['_line'] = line_number
-            #
-            #
-            #
-    def actwithlineandfile(self,lineNo,module):
-        """
-        Adds line number and module name to dict object before calling act method
-        """
-        if(not self.__dict__.__contains__('_line')):
-            self.__dict__['_line'] = lineNo
 
-        if(not  self.__dict__.__contains__('_file')):
-            self.__dict__['_file']=module
-
-        self.act()
-        #
-        #
-        #
-    def act(self):
-        """
-        acts according to log or throw boolean
-        throws itself if throw boolean true at the moment of act function
-        logs exception if log boolean true at the moment of act function
-        :return: nothing
-        """
-        self.__dict__['_timeStamp']=datetime.now().__str__()
-        self.__dict__['_env']= socket.gethostname()
-        if(self.logit):
-            print(ExceptionHelpers.jsonize(self))
-
-        if(not self.dontthrow):
-            raise self
+class argskwargssbase(argsbase,kwargsbase):
+    def __init__(self,*args,**kwargs):
+        argsbase.__init__(self,*args)
+        kwargsbase.__init__(self,**kwargs)  
         
-        if(self.shouldexit):
-            exit(-1)
-            #
-            #
-            #
-    def adddata(self,key:object, value:object):
-        """
-        Adds data to dict object
-        """
-        self.__dict__[key] = value
-        return self
-        #
-        #
-        #
-    def getdata(self,key:object):
-        try:
-            res = self.__dict__[key]
-            return res
-        except Exception as e:
-            TypeError('getData failed',e)
-            #
-            #
-            #
-    def shouldlog(self,shouldLog:bool):
-        """
-        Sets loggin boolean
-        :param shouldlog: true if exception to be logged as json in act function call
-        :return: nothing
-        """
-        self.logit = shouldLog
-        return self
-        #
-        #
-        #
-    def shouldthrow(self,shouldThrow:bool):
-        """
-        Sets throw boolean
-        :param shouldthrow: true if throw itself in act function call
-        :return: nothing
-        """
-        self.dontthrow = not shouldThrow
-        return self
-        #
-        #
-        #
-    def shouldexit(self,shouldExit:bool):
-        """
-        Sets exit boolean
-        :param shouldexit: if true exit appliation at act function call
-        :return: nothing
-        """
-        self.dontthrow = not shouldExit
-        return self
-        #
-        #
-        #
+        
 
-"""
-Thworn for covering user thrown CoreExceptions or unknown system errors or exceptions
-Set actual exception as cause in catch block
-"""
+class JsonEncoders():
+    def __init__(self) -> None:
+        pass
+    
+    class DefaultJsonEncoder(JSONEncoder):
+        def default(self,o):
+            try:
+                if is_jsondumpable(o) :return o 
+                if isinstance(o,bytes):
+                    return self.default(o=str(o))
+                if isinstance(o,bytearray):
+                    return self.default(o=str(bytes(o)))
+                if isinstance(o,set):
+                    return self.default(o=list(o))
+                if hasattr(o,'__dict__'):
+                    if isinstance(o,BaseException):
+                        o.__dict__['_repr']=repr(o)
+                    return self.default(o=o.__dict__)
+                if isinstance(o,tuple):
+                    return self.default(o=list(o))
+                ## try iterate
+                try:
+                    for idx, el in enumerate(o):
+                        isDict = isinstance(o,dict)
+                        val = o[el] if isDict else o[idx]
+                        val = self.default(o=val)
+                        o[el if isDict else idx] = val
+                    o = self.default(o=o)
+                except Exception as e:## not iterable meaning unguessed type
+                    o = self.default(o='<not-serializable>')
+                return o
+            except Exception as e:
+                raise TypeError('dictionarize_data failed',e)
+            
+
+
+def is_jsondumpable(data)->bool:
+    try:
+        json.dumps(data)
+        return True
+    except:
+        return False
+
+class CoreException(argskwargssbase,Exception,BaseException):
+    """
+    kwargs:
+    log : Logs json if true
+    exit: Exists application without raising the actual exception
+    throw: Raises the occured exception. In case of cover exception, it raises the actual(inner) exception
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def act(self, innerexception=None):
+        acceptedactions = ('True','true','TRUE', True)
+
+        if 'log' in self.kwargs:
+            if  self.kwargs['log'] in acceptedactions:
+                print(json.dumps(self,cls=JsonEncoders.DefaultJsonEncoder,indent=2))
+        if 'exit' in self.kwargs:
+            if self.kwargs['exit'] in acceptedactions:
+                sys.exit('System is interrupted with a raised interruption object. Program is ended by user before raising the actual exception.')
+        if 'throw' in self.kwargs:
+            if self.kwargs['throw'] in acceptedactions:
+                raise innerexception if innerexception else self
+
 class CoverException(CoreException):
-    def __init__(self,message:str,cause:Exception=None,dontThrow:bool=False,logIt:bool=False,shouldExit = False):
-        """
-        Initializes object
-        :param message: Exception message
-        :param cause: Exception cause as exception
-        :param dontThrow: true if it is not to be thrown
-        :param logIt: true if exceptionto be logged as json
-        """
-        super(CoverException, self)\
-            .__init__(message=message,cause=cause,dontThrow=dontThrow,logIt=logIt,shouldExit=shouldExit)
-            #
-            #
-            #
-# Util objects
-#def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeCheckMode.TYPE,shouldthrow=False,
-#               shouldlog:bool=False,file:str=None,line:int=None)->bool:
-#
+    """
+    kwargs:
+    log : Logs json if true
+    exit: Exists application without raising the actual exception
+    throw: Raises the occured exception. In case of cover exception, it raises the actual(inner) exception
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    def act(self,innerexception):
+        self.innerexception = innerexception
+        return super().act(innerexception=innerexception)
 
-#
-# Enums related to exception handling
-#
-
-class ReportObject(object):
-    def __init__(self):
-        """
-        Initializes report object
-        :param title: object title
-        """
-        #
-        #
-        #
-    def adddata(self,key:object, value:object):
-        """
-        Adds data to dict object
-        """
-        self.__dict__[key] = value.__dict__ if hasattr(value,"__dict__") else value
+class ReportObject():
+    def __init__(self, **kwargs) -> None:
+        self.__dict__ = self.__dict__ | kwargs
+    def adddata(self,**kwargs):
+        self.__dict__ = self.__dict__ | kwargs
         return self
-        #
-        #
-        #
-    def getdata(self,key:object)->ReportObject|dict|object:
-        """Gets data from body dictionary
+    def toJson(self,verbose = False):
+        js = json.dumps(self,cls = JsonEncoders.DefaultJsonEncoder,indent=2)
+        if verbose:
+            print(js)
+        return js
+    def getdata(self, key):
+        if key in self.__dict__:
+            return self.__dict__[key]
+        return None
 
-        Args:
-            key (object): property name
 
-        Returns:
-            ReportObject|dict|object: property value
-        """
-        try:
-            res = self.__dict__[key]
-            return res
-        except Exception as e:
-            CoreException('getData failed',e,dontThrow=True,logIt=True,shouldExit=True).act()
 
-    def __repr__(self) -> str:
-        return 'ReportObject()'
-        #
-        #
-        #
-    def reportize(self):
-        """converts class attributes to a json report
-
-        Returns:
-            _type_: json string from attributes of the class
-        """
-        return json_dumps_safe(self)
-        #
-        #
-        #
 class TypeCheckMode(Enum):
     TYPE = 1
     SUBTYPE = 2
@@ -272,73 +199,15 @@ def check_type(instance: object, ttype:type,typecheckmode: TypeCheckMode = TypeC
     except Exception as e:
         raise  TypeError(f"Type checking failed",e)
 
-def try_get_dump(data,indent=2)->None|str:
-    try:
-        return json.dumps(data,indent=indent)
-    except:
-        return None
-        #
-        #
-        #
-def is_jsondumpable(data)->bool:
-    try:
-        json.dumps(data)
-        return True
-    except:
-        return False
-        #
-        #
-        #
-def json_dumps_safe(data,indent=2):
-    try:
-        stringified= dictionarize_data(data=data)
-        jsonized = json.dumps(stringified,indent=indent)
-        return jsonized
-    except Exception as e:
-        raise TypeError('json_dumps_safe failed',e)
-        #
-        #
-        #
-def dictionarize_data(data)->dict:
-  try:
-     if is_jsondumpable(data) :return data 
-     ### understand types
-     isBytes = check_type(data,bytes,TypeCheckMode.SUBTYPE)
-     if isBytes:
-         return dictionarize_data(data=str(data))
-     isByteArray = check_type(data,bytearray,TypeCheckMode.SUBTYPE)
-     if isByteArray:
-         return dictionarize_data(data=str(bytes(data)))
-     isSet = hasattr(data,'issuperset') and hasattr(data,'issubset') and hasattr(data,'isdisjoint')
-     if isSet:
-         return dictionarize_data(data=list(data))
-     hasDict = hasattr(data,'__dict__')
-     if hasDict:
-         isException = check_type(data,(Exception,BaseException),TypeCheckMode.SUBTYPE)
-         if(isException):
-            data.__dict__['_repr']=repr(data)
-         return dictionarize_data(data=data.__dict__)
-     isTuple = check_type(data,tuple,TypeCheckMode.SUBTYPE)
-     if isTuple:
-         return dictionarize_data(data=list(data))
-     ## try iterate
-     try:
-         for idx, el in enumerate(data):
-             isDict = hasattr(data,'items') and hasattr(data,'keys') and hasattr(data,'values')
-             val = data[el] if isDict else data[idx]
-             val = dictionarize_data(data=val)
-             data[el if isDict else idx] = val
-         data = dictionarize_data(data=data)
-     except Exception as e:## not iterable meaning unguessed type
-         data = dictionarize_data(data='<not-serializable>')
-     return data
-  except Exception as e:
-    raise TypeError('dictionarize_data failed',e)
 
-
-def test_function(data):
-     return'printing {}'.format(data)
-    
-
-
-
+class ReportObject():
+    def __init__(self, **kwargs) -> None:
+        self.__dict__ = self.__dict__ | kwargs
+    def adddata(self,**kwargs):
+        self.__dict__ = self.__dict__ | kwargs
+        return self
+    def toJson(self,verbose = False):
+        js = json.dumps(self,cls = JsonEncoders.DefaultJsonEncoder,indent=2)
+        if verbose:
+            print(js)
+        return js
